@@ -8,13 +8,18 @@ from kivy.uix.textinput import TextInput
 import requests
 import chess.pgn
 import chess
+import io
+import random
 
+
+messages = ["Error: Please enter a study ID", "Error: Study does not exist or is private", "Success!"]
 
 class OpeningExplorerApp(App):
 
     def build(self):
-        # Set window title
+        # Set window properties
         self.title = "Certabo Opening Explorer"
+        self.icon = 'assets/icon.png'
         self.window = GridLayout(padding=20, spacing=10)
 
         # Set background color to white
@@ -46,16 +51,15 @@ class OpeningExplorerApp(App):
     def callback(self, instance):
         # if text input is empty, return error text
         if self.text_input.text == '':
-            # check if error label already exists
-            if self.window.children[0].text == 'Error: Please enter a study ID':
-                return
-            else:
-                # add error label with red text
-                self.window.add_widget(Label(text='Error: Please enter a study ID', font_size=30, size_hint=(1, None), height=50, color=(1, 0, 0, 1)))
+            # remove exisiting label if it exists
+            if self.window.children[0].text in messages:
+                self.window.remove_widget(self.window.children[0])
+            
+            self.window.add_widget(Label(text=messages[0], font_size=30, size_hint=(1, None), height=50, color=(1, 0, 0, 1)))
 
         else:
-            # remove error label if it exists
-            if self.window.children[0].text == 'Error: Please enter a study ID':
+            # remove exisiting label if it exists
+            if self.window.children[0].text in messages:
                 self.window.remove_widget(self.window.children[0])
             
             # fetch study pgn from lichess
@@ -68,29 +72,45 @@ class OpeningExplorerApp(App):
                 r.raise_for_status()
             except requests.exceptions.HTTPError as err:
                 # check if error label already exists
-                if self.window.children[0].text == 'Error: Study does not exist or is private':
+                if self.window.children[0].text == messages[1]:
                     return
                 else:
                     # add error label with red text
-                    self.window.add_widget(Label(text='Error: Study does not exist or is private', font_size=30, size_hint=(1, None), height=50, color=(1, 0, 0, 1)))
+                    self.window.add_widget(Label(text=messages[1], font_size=30, size_hint=(1, None), height=50, color=(1, 0, 0, 1)))
                 return
             
             # if study exists, remove error label if it exists
-            if self.window.children[0].text == 'Error: Study does not exist or is private':
+            if self.window.children[0].text == messages[1]:
                 self.window.remove_widget(self.window.children[0])
 
-            # # get pgn from response
-            # pgns = r.text.split('\n\n')
-            # games = [chess.pgn.read_game(chess.pgn.StringIO(pgn)) for pgn in pgns]
-            # # get random move in a given position if its in the games at any given point, also check sidelines
-            # def get_random_move(position):
-            #     for game in games:
-            #         node = game
-            #         while node:
-            #             if node.board().fen() == position.fen():
-            #                 return node.move
-            #             node = node.variation(0)
-            #     return None
+            # get pgn from response
+            pgns = r.text.split('\n\n')
+            games = [chess.pgn.read_game(io.StringIO(game)) for game in pgns]
+            board = chess.Board()
+            game = random.choice(games)
+
+            # add success label with green text
+            self.window.add_widget(Label(text=messages[2], font_size=30, size_hint=(1, None), height=50, color=(0, 1, 0, 1)))
+
+            node = game.next()
+            while node:
+                # print(node.move)
+                board.push(node.move)
+
+                if len(node.variations) > 1:
+                    # get all possible moves for all variations
+                    moves = []
+                    for idx, variation in enumerate(node.variations):
+                        moves.append((idx, variation.move))
+
+                    # pick a random move
+                    move = random.choice(moves)
+                    node = node.variations[move[0]]
+                    board.push(node.move)
+                    
+                node = node.next()
+                
+            print(board)
 
 
 if __name__ == '__main__':
