@@ -20,7 +20,6 @@ import chess
 import io
 import random
 import berserk
-import os
 
 messages = ["Error: Please enter a study ID", "Error: Study/Chapter does not exist or is private", "Success!", "Error: Failed to load study", "Error: Rate limit exceeded, please try again in 1 minute"]
 
@@ -75,14 +74,7 @@ class PlayScreen(Screen):
         self.layout.size_hint = (0.8, 0.4)
         self.layout.pos_hint = {'center_x': 0.5, 'center_y': 0.8}
 
-        # add back button to top left corner, it should be small
-        self.layout.add_widget(Button(text='Back', font_size=30, size_hint=(None, None), height=50, width=100,
-                                 background_color=(0.5, 0.5, 0.5, 1),  # Set gray background    
-                                    padding=[20, 10], on_press=self.back))
-
-        self.layout.add_widget(Label(text='Play Screen', font_size=30, size_hint=(1, None), height=50))
-        self.layout.add_widget(Label(text='Not yet implemented', font_size=30, size_hint=(1, None), height=50, color=(1, 0, 0, 1)))
-        
+        self.selection(None)
 
         # Add the GridLayout to the screen
         self.add_widget(self.layout)
@@ -90,6 +82,74 @@ class PlayScreen(Screen):
     def back(self, instance):
         self.manager.transition.direction = 'right'
         self.manager.current = 'main'
+    
+    def selection(self, instance):
+        #  clear children and ask if they want to play computer or human
+        self.layout.clear_widgets()
+        # add back button to top left corner, it should be small
+        self.layout.add_widget(Button(text='Back', font_size=30, size_hint=(None, None), height=50, width=100,
+                                background_color=(0.5, 0.5, 0.5, 1),  # Set gray background    
+                                padding=[20, 10], on_press=self.back))
+
+        # ask if they want to play computer or human
+        self.layout.add_widget(Label(text='Play against:', font_size=30, size_hint=(1, None), height=100))
+
+        # add buttons for different options
+        self.layout.add_widget(Button(text='Computer', font_size=30, size_hint=(1, None), height=75,
+                                background_color=(0.5, 0.5, 0.5, 1),  # Set gray background
+                                padding=[20, 10], on_press=self.computer))
+        self.layout.add_widget(Button(text='Human', font_size=30, size_hint=(1, None), height=75,
+                                background_color=(0.5, 0.5, 0.5, 1),  # Set gray background
+                                padding=[20, 10], on_press=self.human))
+
+    def computer(self, instance):
+        # clear children and ask if they want to play white or black
+        self.layout.clear_widgets()
+        self.layout.add_widget(Button(text='Back', font_size=30, size_hint=(None, None), height=50, width=100,
+                                background_color=(0.5, 0.5, 0.5, 1),  # Set gray background
+                                padding=[20, 10], on_press=self.selection))
+        self.layout.add_widget(Label(text='Play as:', font_size=30, size_hint=(1, None), height=100))
+        self.layout.add_widget(Button(text='White', font_size=30, size_hint=(1, None), height=75,
+                                background_color=(0.5, 0.5, 0.5, 1),  # Set gray background
+                                padding=[20, 10], on_press=self.white))
+        self.layout.add_widget(Button(text='Black', font_size=30, size_hint=(1, None), height=75,
+                                background_color=(0.5, 0.5, 0.5, 1),  # Set gray background
+                                padding=[20, 10], on_press=self.black))
+        
+    def white(self, instance):
+        self.manager.side = 'white'
+        self.manager.transition.direction = 'left'
+        self.manager.current = 'game'
+    
+    def black(self, instance):
+        self.manager.side = 'black'
+        self.manager.transition.direction = 'left'
+        self.manager.current = 'game'
+            
+    def human(self, instance):
+        self.manager.side = 'human'
+        self.manager.transition.direction = 'left'
+        self.manager.current = 'game'
+
+
+class GameScreen(Screen):
+    def __init__(self, **kwargs):
+        super(GameScreen, self).__init__(**kwargs)
+        self.layout = GridLayout(padding=20, spacing=10)
+        self.layout.cols = 1
+        self.layout.size_hint = (0.8, 0.4)
+        self.layout.pos_hint = {'center_x': 0.5, 'center_y': 0.8}
+
+        # add back button to top left corner, it should be small
+        self.layout.add_widget(Button(text='Back', font_size=30, size_hint=(None, None), height=50, width=100,
+                                background_color=(0.5, 0.5, 0.5, 1),  # Set gray background    
+                                padding=[20, 10], on_press=self.back))
+
+        self.add_widget(self.layout)
+
+    def back(self, instance):
+        self.manager.transition.direction = 'right'
+        self.manager.current = 'play'
 
 
 class BoardConnection(Screen):
@@ -162,8 +222,7 @@ class OpeningExplorerScreen(Screen):
                 btn.bind(on_release=lambda btn: self.dropdown.select(btn.text))
 
                 # Add the trash icon to the layout
-                trash_icon = Button(background_normal='assets/trash.png',
-                                    size_hint=(None, 1))                
+                trash_icon = Button(background_normal='assets/trash.png', size_hint=(None, 1))      
                 trash_icon.bind(on_release=lambda instance: self.remove_id(id))
 
                 # Add the label and the trash icon to the layout
@@ -389,6 +448,7 @@ class ChessApp(App):
         sm.add_widget(OpeningExplorerScreen(name='opening_explorer'))
         sm.add_widget(BoardConnection(name='board_connection'))
         sm.add_widget(WaitingForBoardScreen(name='waiting_for_board'))
+        sm.add_widget(GameScreen(name='game'))
         return sm
 
 
