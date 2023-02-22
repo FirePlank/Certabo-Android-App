@@ -1,2 +1,3 @@
 python-chess
 kivy
+berserk
