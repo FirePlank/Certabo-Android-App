@@ -130,3 +130,6 @@ dmypy.json
 
 # buildozer
 .buildozer/
+
+# storage
+data.json

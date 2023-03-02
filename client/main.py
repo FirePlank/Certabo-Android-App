@@ -1,3 +1,5 @@
+import textwrap
+import webbrowser
 from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
@@ -12,6 +14,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.storage.jsonstore import JsonStore
 from kivy.network.urlrequest import UrlRequest
 from kivy.config import Config
+from kivy.utils import platform
 
 from functools import partial
 import chess.pgn
@@ -19,11 +22,14 @@ import chess
 import chess.svg
 import random
 import berserk
+import io
+import requests
 from io import BytesIO
 from fentoboardimage import fenToImage, loadPiecesFolder
 
 pieceSet = loadPiecesFolder('assets/pieces/')
 server_ip = "0.0.0.0"
+lichess_client = berserk.Client()
 
 # remove multitouch emulation with mouse right click.
 Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
@@ -79,7 +85,7 @@ class MainScreen(Screen):
                                background_color=(0.5, 0.5, 0.5, 1),  # Set gray background
                                padding=[20, 10], on_press=self.opening_explorer))
 
-        self.layout.add_widget(Button(text='Tests and Configuration', font_size=30, size_hint=(1, None), height=75, 
+        self.layout.add_widget(Button(text='Configuration', font_size=30, size_hint=(1, None), height=75, 
                                background_color=(0.5, 0.5, 0.5, 1),  # Set gray background
                                padding=[20, 10], on_press=self.test_screen))
         
@@ -133,6 +139,19 @@ class TestScreen(Screen):
         self.layout.add_widget(Button(text='Test Connection to Server', font_size=30, size_hint=(1, None), height=75, 
                                background_color=(0.5, 0.5, 0.5, 1),  # Set gray background
                                padding=[20, 10], on_press=self.engine_test))
+        
+        self.layout.add_widget(Button(text='Log into lichess', font_size=30, size_hint=(1, None), height=75,
+                                 background_color=(0.5, 0.5, 0.5, 1),  # Set gray background
+                                 padding=[20, 10], on_press=self.lichess_connection))
+        
+        # add text at bottom showing currently connected lichess account if any
+        store = JsonStore('data.json')
+        if store.exists('lichess_api_key'):
+            self.layout.add_widget(Label(text='Currently logged in as: ' + store.get('lichess_api_key')["value"].split("//")[1], font_size=30, size_hint=(1, None), height=75, color=(0, 1, 0, 1)))
+        else:
+            self.layout.add_widget(Label(text='Currently not logged into a lichess account', font_size=30, size_hint=(1, None), height=75, color=(1, 0, 0, 1)))
+
+        
     
     def board_connection(self, instance):
         # clear widgets
@@ -192,7 +211,7 @@ class TestScreen(Screen):
             ip += ':5000'
 
         # asyncronously test connection to server
-        req = UrlRequest('http://' + ip, on_success=self.connection_success, on_failure=self.connection_failure, timeout=5)
+        req = UrlRequest('http://' + ip, on_success=self.connection_success, on_failure=self.connection_failure, on_error=self.connection_failure, timeout=5)
 
     def connection_success(self, req, result):
         global server_ip
@@ -214,16 +233,16 @@ class TestScreen(Screen):
         url = 'http://' + server_ip + '/move?fen=' + self.board.fen()
         # convert url to url encoded string
         url = url.replace(' ', '%20')
-        req = UrlRequest(url, on_success=self.best_move_success, on_failure=self.best_move_failure, timeout=5)
+        req = UrlRequest(url, on_success=self.best_move_success, on_failure=self.best_move_failure, on_error=self.best_move_failure, timeout=5)
     
     def connection_failure(self, req, result):
         global server_ip
         # add failure widget with red text
-        self.layout.add_widget(Label(text='Connection to server failed!', font_size=30, size_hint=(1, None), height=100, color=(1, 0, 0, 1)))
-        self.layout.add_widget(Label(text='Check if the server ip is correct and that the server is running and on the same WIFI', font_size=20, size_hint=(1, None), height=100, color=(1, 0, 0, 1)))
+        self.layout.add_widget(Label(text='Connection to server failed!', font_size=30, size_hint=(1, None), height=50, color=(1, 0, 0, 1)))
+        self.layout.add_widget(Label(text='Check if the server ip is correct and that the server is running and on the same WIFI', font_size=20, size_hint=(1, None), height=40, color=(1, 0, 0, 1)))
         
         # display error
-        self.layout.add_widget(Label(text=str(result), font_size=20, size_hint=(1, None), height=100, color=(1, 0, 0, 1)))
+        self.layout.add_widget(Label(text=str(result), font_size=20, size_hint=(1, None), height=40, color=(1, 0, 0, 1)))
 
         # remove server_ip
         server_ip = "0.0.0.0"
@@ -255,12 +274,92 @@ class TestScreen(Screen):
 
     def best_move_failure(self, req, result):
         # add failure widget with red text
-        self.layout.add_widget(Label(text='Failed to fetch best move!', font_size=30, size_hint=(None, None), height=100, color=(1, 0, 0, 1)))
+        self.layout.add_widget(Label(text='Failed to fetch best move!', font_size=30, size_hint=(None, None), height=40, color=(1, 0, 0, 1)))
 
         # display error
         self.layout.add_widget(Label(text=str(result), font_size=20, size_hint=(1, None), height=100, color=(1, 0, 0, 1)))
 
+    def lichess_connection(self, instance):
+        # clear children
+        self.layout.clear_widgets()
 
+        # add back button to top left corner, it should be small
+        self.layout.add_widget(Button(text='Back', font_size=30, size_hint=(None, None), height=50, width=100,
+                                background_color=(0.5, 0.5, 0.5, 1),  # Set gray background    
+                                padding=[20, 10], on_press=self.tests))
+        
+        # add text explaining
+        text = 'To use the lichess integration, you need to create a lichess API key by clicking the button below. You can revoke this key at any time on the lichess website.'
+        # automatically split text into new line if it is too long
+        text = textwrap.fill(text, 70)
+        self.layout.add_widget(Label(text=text, font_size=20, size_hint=(1, None), height=100))
+        
+
+        # add button to connect to lichess
+        self.layout.add_widget(Button(text='Create Lichess API key', font_size=30, size_hint=(1, None), height=75,
+                                    background_color=(0.5, 0.5, 0.5, 1),  # Set gray background
+                                    padding=[20, 10], on_press=self.create_key))
+        
+        
+        # add text input to enter lichess API key
+        self.layout.add_widget(Label(text='Enter your lichess API key:', font_size=30, size_hint=(1, None), height=50))
+        self.text_input = TextInput(multiline=False, size_hint=(1, None), height=75,
+                                    background_color=(1, 1, 1, 1),  # Set white background
+                                    padding=[20, 10])
+        self.layout.add_widget(self.text_input)
+
+        # add button to connect to lichess
+        self.layout.add_widget(Button(text='Connect to lichess', font_size=30, size_hint=(1, None), height=75,
+                                    background_color=(0.5, 0.5, 0.5, 1),  # Set gray background
+                                    padding=[20, 10], on_press=self.connect_to_lichess))
+        
+    def create_key(self, instance):
+        # open webbrowser to create lichess API key
+
+        # check if we are on android
+        if platform == 'android':
+            pass
+        elif platform != 'ios':
+            webbrowser.open('https://lichess.org/account/oauth/token/create?scopes[]=challenge:write&scopes[]=challenge:read&scopes[]=study:read&scopes[]=board:play&description=Certabo+Board+App', new=2)
+        else:
+            # add error message in red
+            self.layout.add_widget(Label(text='Failed to open webbrowser! IOS not supported.', font_size=20, size_hint=(1, None), height=50, color=(1, 0, 0, 1)))
+            
+    def connect_to_lichess(self, instance):
+        global lichess_client
+        lichess_api_key = self.text_input.text
+        if lichess_api_key == '':
+            # check if error is already displayed
+            if self.layout.children[0].text != "Connect to lichess":
+                self.layout.remove_widget(self.layout.children[0])
+
+            # add error message in red
+            self.layout.add_widget(Label(text='Please enter a valid lichess API key!', font_size=20, size_hint=(1, None), height=50, color=(1, 0, 0, 1)))
+        else:
+            # check if error is already displayed
+            if self.layout.children[0].text != "Connect to lichess":
+                self.layout.remove_widget(self.layout.children[0])
+
+            # try to connect to lichess
+            session = berserk.TokenSession(lichess_api_key)
+            lichess_client = berserk.Client(session=session)
+            username = ''
+
+            try:
+                account = lichess_client.account.get()
+                # add success message in green
+                self.layout.add_widget(Label(text=f"Successfully logged in as '{account['username']}'!", font_size=20, size_hint=(1, None), height=50, color=(0, 1, 0, 1)))
+                # save username
+                username = account['username']
+            except:
+                # add error message in red
+                self.layout.add_widget(Label(text='Failed to connect to lichess! Please check the validity of the given API key.', font_size=20, size_hint=(1, None), height=50, color=(1, 0, 0, 1)))
+                return
+
+            # save lichess API key
+            store = JsonStore('data.json')
+            store.put("lichess_api_key", value=f"{lichess_api_key}//{username}")
+    
 class PlayScreen(Screen):
     def __init__(self, **kwargs):
         super(PlayScreen, self).__init__(**kwargs)
@@ -336,17 +435,35 @@ class GameScreen(Screen):
         self.layout.cols = 1
         self.layout.size_hint = (0.8, 0.4)
         self.layout.pos_hint = {'center_x': 0.5, 'center_y': 0.8}
+        self.board = chess.Board()
 
         # add back button to top left corner, it should be small
         self.layout.add_widget(Button(text='Back', font_size=30, size_hint=(None, None), height=50, width=100,
                                 background_color=(0.5, 0.5, 0.5, 1),  # Set gray background    
                                 padding=[20, 10], on_press=self.back))
+        
+        # small padding
+        self.layout.add_widget(Label(text='', font_size=30, size_hint=(1, None), height=50))
+        
+        # display the board
+        self.layout.add_widget(board_to_image(self.board))
 
+        # display pgn
+        # self.layout.add_widget(Label(text=self.board.pgn(), font_size=30, size_hint=(1, None), height=100))
+
+        # add button to import game to lichess
+        self.layout.add_widget(Button(text='Import to Lichess', font_size=30, size_hint=(1, None), height=75,
+                                background_color=(0.5, 0.5, 0.5, 1),  # Set gray background
+                                padding=[20, 10], on_press=self.import_game))
+        
         self.add_widget(self.layout)
 
     def back(self, instance):
         self.manager.transition.direction = 'right'
         self.manager.current = 'play'
+
+    def import_game(self, instance):
+        pass
 
 
 class OpeningExplorerScreen(Screen):
@@ -509,7 +626,13 @@ class OpeningExplorerScreen(Screen):
 
             # check if study exists
             try:
-                r = requests.get(url)
+                store = JsonStore('data.json')
+                if store.exists('lichess_api_key'):
+                    key = store.get('lichess_api_key')['value'].split("//")[0]
+                    r = berserk.TokenSession(key).get(url)
+                else:
+                    r = requests.get(url)
+
                 # if status is 429, it means we are being rate limited, so give error to wait 1 minute
                 if r.status_code == 429:
                     self.layout.add_widget(Label(text=messages[4], font_size=20, size_hint=(1, None), height=50, color=(1, 0, 0, 1)))
