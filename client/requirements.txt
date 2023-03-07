@@ -3,3 +3,5 @@ kivy
 berserk
 pyserial==3.4
 fentoboardimage
+pyjnius
+requests
