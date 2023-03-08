@@ -1,0 +1,95 @@
+2023-03-03 18:08:59,636:logger:###########################################################################
+2023-03-03 18:08:59,636:logger:###########################################################################
+2023-03-03 18:08:59,636:logger:MAIN application launched
+2023-03-03 18:08:59,636:logger:Version: 24.11.2020
+2023-03-03 18:08:59,636:logger:Arguments: Namespace(usbport=None, btport=None, publish=None, game_id=None, game_key=None, robust=False, syzygy=None, hide_cursor=False, max_depth=20, debug=None, port_not_strict=True, multiprocessing_fork=None)
+2023-03-03 18:09:57,920:logger:###########################################################################
+2023-03-03 18:09:57,928:logger:###########################################################################
+2023-03-03 18:09:57,928:logger:MAIN application launched
+2023-03-03 18:09:57,928:logger:Version: 24.11.2020
+2023-03-03 18:09:57,928:logger:Arguments: Namespace(usbport=None, btport=None, publish=None, game_id=None, game_key=None, robust=False, syzygy=None, hide_cursor=False, max_depth=20, debug=None, port_not_strict=True, multiprocessing_fork=None)
+2023-03-03 18:09:58,731:main:Screen size = 1536px x 864px
+2023-03-03 18:09:58,732:main:Running game with xresolution = 1366
+2023-03-03 18:09:58,733:main:Running game with window size = 900px x 600px
+2023-03-03 18:11:57,815:logger:###########################################################################
+2023-03-03 18:11:57,815:logger:###########################################################################
+2023-03-03 18:11:57,815:logger:MAIN application launched
+2023-03-03 18:11:57,815:logger:Version: 24.11.2020
+2023-03-03 18:11:57,815:logger:Arguments: Namespace(usbport=None, btport=None, publish=None, game_id=None, game_key=None, robust=False, syzygy=None, hide_cursor=False, max_depth=20, debug=None, port_not_strict=True, multiprocessing_fork=None)
+2023-03-03 18:11:58,505:main:Screen size = 1536px x 864px
+2023-03-03 18:11:58,506:main:Running game with xresolution = 1366
+2023-03-03 18:11:58,506:main:Running game with window size = 900px x 600px
+2023-03-03 18:11:58,706:usbtool:Searching for USB devices: strict = True
+2023-03-03 18:11:58,706:usbtool:test_address: None
+2023-03-03 18:11:58,800:usbtool:Checking COM3: Silicon Labs CP210x USB to UART Bridge (COM3)
+2023-03-03 18:11:58,848:usbtool:Port is available
+2023-03-03 18:11:58,849:usbtool:Found port with right description: returning.
+2023-03-03 18:11:59,349:usbtool:Launching Usbtool in separate process
+2023-03-03 18:12:01,376:main:Saving Certabo Settings: {'address_chessboard': 'COM3', 'connection_method': 'usb', 'remote_control': False}
+2023-03-03 18:12:01,378:reader_writer:Loading calibration file: C:\Users\Jesse.Sissala\Documents\Coding\Python\Certabo-Android-App\client\certabo\utils\data\calibration-COM3.bin
+2023-03-03 18:12:01,379:remote_control:Remote control: False
+2023-03-03 18:12:17,941:main:Calibration: Add piece - collecting samples
+2023-03-03 18:12:25,543:reader_writer:Calibration: Enough samples for averaging
+2023-03-03 18:12:25,545:reader_writer:Added new piece Q with code: [91, 0, 124, 223, 92]
+2023-03-03 18:12:25,547:reader_writer:Loading calibration file: C:\Users\Jesse.Sissala\Documents\Coding\Python\Certabo-Android-App\client\certabo\utils\data\calibration-COM3.bin
+2023-03-03 18:12:25,558:reader_writer:Calibration: completed successfully
+2023-03-03 18:13:31,821:main:Calibration: Add piece - collecting samples
+2023-03-03 18:13:39,998:reader_writer:Calibration: Enough samples for averaging
+2023-03-03 18:13:40,001:reader_writer:Piece code [91, 0, 124, 223, 92] was previously assigned to another piece! A full setup calibration may be necessary!
+2023-03-03 18:13:40,001:reader_writer:Added new piece p with code: [91, 0, 124, 223, 92]
+2023-03-03 18:13:40,002:reader_writer:Added new piece P with code: [91, 0, 125, 29, 33]
+2023-03-03 18:13:40,003:reader_writer:Added new piece p with code: [91, 0, 124, 212, 77]
+2023-03-03 18:13:40,004:reader_writer:Added new piece P with code: [91, 0, 124, 238, 206]
+2023-03-03 18:13:40,005:reader_writer:Added new piece p with code: [91, 0, 124, 199, 161]
+2023-03-03 18:13:40,006:reader_writer:Added new piece P with code: [91, 0, 124, 237, 17]
+2023-03-03 18:13:40,007:reader_writer:Added new piece p with code: [91, 0, 124, 230, 144]
+2023-03-03 18:13:40,007:reader_writer:Added new piece P with code: [91, 0, 124, 203, 245]
+2023-03-03 18:13:40,008:reader_writer:Added new piece p with code: [91, 0, 124, 203, 204]
+2023-03-03 18:13:40,009:reader_writer:Added new piece P with code: [91, 0, 125, 14, 23]
+2023-03-03 18:13:40,010:reader_writer:Added new piece p with code: [91, 0, 124, 212, 66]
+2023-03-03 18:13:40,011:reader_writer:Added new piece P with code: [91, 0, 125, 17, 170]
+2023-03-03 18:13:40,012:reader_writer:Added new piece p with code: [91, 0, 124, 255, 60]
+2023-03-03 18:13:40,013:reader_writer:Added new piece P with code: [91, 0, 124, 195, 30]
+2023-03-03 18:13:40,013:reader_writer:Added new piece p with code: [91, 0, 124, 172, 73]
+2023-03-03 18:13:40,014:reader_writer:Added new piece P with code: [91, 0, 124, 223, 69]
+2023-03-03 18:13:40,017:reader_writer:Added new piece r with code: [91, 0, 124, 218, 250]
+2023-03-03 18:13:40,018:reader_writer:Added new piece r with code: [91, 0, 124, 226, 220]
+2023-03-03 18:13:40,019:reader_writer:Added new piece R with code: [91, 0, 125, 23, 80]
+2023-03-03 18:13:40,020:reader_writer:Added new piece R with code: [91, 0, 124, 194, 205]
+2023-03-03 18:13:40,021:reader_writer:Added new piece n with code: [91, 0, 124, 201, 236]
+2023-03-03 18:13:40,022:reader_writer:Added new piece n with code: [91, 0, 124, 213, 203]
+2023-03-03 18:13:40,023:reader_writer:Added new piece N with code: [91, 0, 125, 7, 132]
+2023-03-03 18:13:40,023:reader_writer:Added new piece N with code: [91, 0, 124, 213, 186]
+2023-03-03 18:13:40,024:reader_writer:Added new piece b with code: [91, 0, 124, 199, 106]
+2023-03-03 18:13:40,025:reader_writer:Added new piece B with code: [91, 0, 124, 214, 33]
+2023-03-03 18:13:40,026:reader_writer:Added new piece B with code: [91, 0, 125, 23, 8]
+2023-03-03 18:13:40,027:reader_writer:Added new piece q with code: [91, 0, 124, 201, 251]
+2023-03-03 18:13:40,028:reader_writer:Added new piece Q with code: [91, 0, 124, 200, 12]
+2023-03-03 18:13:40,030:reader_writer:Added new piece q with code: [91, 0, 124, 237, 236]
+2023-03-03 18:13:40,032:reader_writer:Added new piece Q with code: [91, 0, 124, 200, 114]
+2023-03-03 18:13:40,033:reader_writer:Added new piece k with code: [91, 0, 124, 218, 252]
+2023-03-03 18:13:40,034:reader_writer:Added new piece K with code: [91, 0, 125, 26, 159]
+2023-03-03 18:13:40,036:reader_writer:Loading calibration file: C:\Users\Jesse.Sissala\Documents\Coding\Python\Certabo-Android-App\client\certabo\utils\data\calibration-COM3.bin
+2023-03-03 18:13:40,047:reader_writer:Calibration: completed successfully
+2023-03-03 18:13:46,066:main:Calibration: New setup - collecting samples
+2023-03-03 18:13:54,486:reader_writer:Calibration: Enough samples for averaging
+2023-03-03 18:13:54,490:reader_writer:Calibration: New mapping obtained:
+2023-03-03 18:13:54,491:reader_writer:('b', [[91, 0, 124, 199, 106]])
+2023-03-03 18:13:54,492:reader_writer:('k', [[91, 0, 124, 218, 252]])
+2023-03-03 18:13:54,493:reader_writer:('n', [[91, 0, 124, 201, 236], [91, 0, 124, 213, 203]])
+2023-03-03 18:13:54,494:reader_writer:('p', [[91, 0, 124, 223, 92], [91, 0, 124, 212, 77], [91, 0, 124, 199, 161], [91, 0, 124, 230, 144], [91, 0, 124, 203, 204], [91, 0, 124, 212, 66], [91, 0, 124, 255, 60], [91, 0, 124, 172, 73]])
+2023-03-03 18:13:54,495:reader_writer:('q', [[91, 0, 124, 201, 251], [91, 0, 124, 237, 236]])
+2023-03-03 18:13:54,495:reader_writer:('r', [[91, 0, 124, 218, 250], [91, 0, 124, 226, 220]])
+2023-03-03 18:13:54,496:reader_writer:('B', [[91, 0, 124, 214, 33], [91, 0, 125, 23, 8]])
+2023-03-03 18:13:54,497:reader_writer:('K', [[91, 0, 125, 26, 159]])
+2023-03-03 18:13:54,498:reader_writer:('N', [[91, 0, 125, 7, 132], [91, 0, 124, 213, 186]])
+2023-03-03 18:13:54,499:reader_writer:('P', [[91, 0, 125, 29, 33], [91, 0, 124, 238, 206], [91, 0, 124, 237, 17], [91, 0, 124, 203, 245], [91, 0, 125, 14, 23], [91, 0, 125, 17, 170], [91, 0, 124, 195, 30], [91, 0, 124, 223, 69]])
+2023-03-03 18:13:54,500:reader_writer:('Q', [[91, 0, 124, 200, 12], [91, 0, 124, 200, 114]])
+2023-03-03 18:13:54,503:reader_writer:('R', [[91, 0, 125, 23, 80], [91, 0, 124, 194, 205]])
+2023-03-03 18:13:54,504:reader_writer:Loading calibration file: C:\Users\Jesse.Sissala\Documents\Coding\Python\Certabo-Android-App\client\certabo\utils\data\calibration-COM3.bin
+2023-03-03 18:13:54,513:reader_writer:Calibration: completed successfully
+2023-03-03 18:14:14,125:main:Calibration: Add piece - collecting samples
+2023-03-03 18:14:22,270:reader_writer:Calibration: Enough samples for averaging
+2023-03-03 18:14:22,273:reader_writer:Added new piece b with code: [91, 0, 125, 25, 96]
+2023-03-03 18:14:22,276:reader_writer:Loading calibration file: C:\Users\Jesse.Sissala\Documents\Coding\Python\Certabo-Android-App\client\certabo\utils\data\calibration-COM3.bin
+2023-03-03 18:14:22,286:reader_writer:Calibration: completed successfully
