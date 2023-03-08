@@ -661,6 +661,13 @@ class GameScreen(Screen):
         self.playing = False
         self.move = None
 
+        self.setup()
+        self.add_widget(self.layout)
+
+        # schedule update before play
+        Clock.schedule_once(self.update_before_play, 1)
+
+    def setup(self):
         # add back button to top left corner, it should be small
         self.layout.add_widget(Button(text='Back', font_size=30, size_hint=(None, None), height=50, width=100,
                                 background_color=(0.5, 0.5, 0.5, 1),  # Set gray background    
@@ -689,11 +696,15 @@ class GameScreen(Screen):
         
         # add text saying connecting to board
         self.layout.add_widget(Label(text='Trying to see if we have connection to board...', font_size=20, size_hint=(1, None), height=40))
-        
-        self.add_widget(self.layout)
 
-        # schedule update before play
-        Clock.schedule_once(self.update_before_play, 1)
+    def on_leave(self, *args):
+        self.layout.clear_widgets()
+        self.game = chess.pgn.Game(headers={"Event": "Certabo OTB Game", "Site": "Certabo Board", "Round": "1", "White": "White", "Black": "Black", "Result": "*"})
+        self.node = self.game
+        self.playing = False
+        self.move = None
+        self.setup()
+        return super().on_leave(*args)
 
     def back(self, instance):
         self.manager.transition.direction = 'right'
@@ -853,8 +864,17 @@ class OpeningExplorerScreen(Screen):
         self.node = self.game
         self.move = None
         self.layout.pos_hint = {'center_x': 0.5, 'center_y': 0.8}
-        # self.mycertabo = certabo.Certabo(calibrate=False)
 
+        self.setup()
+
+        # Add the GridLayout to the screen
+        self.add_widget(self.layout)
+
+    def back(self, instance):
+        self.manager.transition.direction = 'right'
+        self.manager.current = 'main'
+
+    def setup(self):
         # add back button to top left corner, it should be small
         self.layout.add_widget(Button(text='Back', font_size=30, size_hint=(None, None), height=50, width=100,
                                  background_color=(0.5, 0.5, 0.5, 1),  # Set gray background    
@@ -936,15 +956,13 @@ class OpeningExplorerScreen(Screen):
         # Add the BoxLayout to the GridLayout
         self.layout.add_widget(hbox)
 
-        # Add the GridLayout to the screen
-        self.add_widget(self.layout)
-
-    def back(self, instance):
-        self.manager.transition.direction = 'right'
-        self.manager.current = 'main'
-
     def on_leave(self, *args):
-        print('Leaving Opening Explorer Screen')
+        self.game = chess.pgn.Game()
+        self.games = []
+        self.node = self.game
+        self.move = None
+        self.layout.clear_widgets()
+        self.setup()
         return super().on_leave(*args)
 
     def remove_id(self, id, instance):
