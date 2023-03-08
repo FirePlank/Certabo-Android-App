@@ -139,6 +139,43 @@ def get_move_from_fens(fen1, fen2):
     
     return from_square + to_square
 
+def flash_leds():
+    global mycertabo
+    if mycertabo.board_state_usb == "": return
+
+    board = chess.Board(fen=mycertabo.board_state_usb)
+    # get the indices of the occupied squares, 0 index should be top left square
+    board = board.mirror()
+    occupied_square_indices = [i for i in range(64) if board.piece_at(i) is not None]
+
+    # construct new fen string that contains a pawn if the square is empty and nothing if the square is occupied
+    new_fen = ""
+    empty_index = 0
+    for i in range(64):
+        if i in occupied_square_indices:
+            empty_index += 1
+        else:
+            if empty_index != 0:
+                new_fen += str(empty_index)
+            new_fen += "P"
+            empty_index = 0
+        if i % 8 == 7:
+            if empty_index != 0:
+                new_fen += str(empty_index)
+            new_fen += "/"
+            empty_index = 0
+    new_fen = new_fen[:-1]
+
+    # flash the leds
+    old = mycertabo.chessboard.fen()
+    mycertabo.set_board_from_fen(new_fen)
+    time.sleep(0.5)
+    mycertabo.set_board_from_fen(old)
+    time.sleep(0.5)
+    mycertabo.set_board_from_fen(new_fen)
+    time.sleep(0.5)
+    mycertabo.set_board_from_fen(old)
+
 def connect_to_certabo():
     global mycertabo, led_manager
     while mycertabo is None:
@@ -316,12 +353,7 @@ class TestScreen(Screen):
         self.layout.add_widget(Button(text='Calibrate', font_size=30, size_hint=(1, None), height=60,
                                  background_color=(0.5, 0.5, 0.5, 1),  # Set gray background
                                  padding=[20, 10], on_press=self.calibrate))
-        # usbtool.start_usbtool(port_chessboard)
-        # self.usb_reader = reader_writer.BoardReader(port_chessboard)
-
-        led_manager.set_leds(['a1', 'a8', 'h1', 'h8'])
-        print(led_manager)
-
+        
         if mycertabo.board_state_usb == "":
             self.before = mycertabo.chessboard
         else:
@@ -752,6 +784,9 @@ class GameScreen(Screen):
         self.node = self.node.add_variation(chess.Move.from_uci(self.move[0]))
         self.move = None
 
+        if mycertabo.chessboard.is_game_over():
+            flash_leds()
+
         # start new thread to get move
         thread = threading.Thread(target=self.get_move, daemon=True)
         thread.start()
@@ -1018,6 +1053,14 @@ class OpeningExplorerScreen(Screen):
             self.layout.add_widget(Button(text='Back', font_size=30, size_hint=(None, None), height=50, width=100,
                                 background_color=(0.5, 0.5, 0.5, 1),  # Set gray background    
                                 padding=[20, 10], on_press=self.back))
+            
+            if self.orientation == 'white' and mycertabo.chessboard.turn == chess.BLACK:
+                mycertabo.chessboard.push(self.node.move)
+                self.node = self.node.variations[0]
+            elif self.orientation == 'black' and mycertabo.chessboard.turn == chess.WHITE:
+                mycertabo.chessboard.push(self.node.move)
+                self.node = self.node.variations[0]
+            
             # add board
             self.layout.add_widget(board_to_image(mycertabo.chessboard, flipped=(self.orientation == 'black')))
 
@@ -1032,10 +1075,6 @@ class OpeningExplorerScreen(Screen):
             # add text saying to make a move
             self.layout.add_widget(Label(text="Make the next move", font_size=30, size_hint=(1, None), height=50))
 
-            if self.orientation == 'white' and mycertabo.chessboard.turn == chess.BLACK:
-                mycertabo.chessboard.push(self.node.move)
-            elif self.orientation == 'black' and mycertabo.chessboard.turn == chess.WHITE:
-                mycertabo.chessboard.push(self.node.move)
 
             # save study id to json file
             store = JsonStore('data.json')
@@ -1074,15 +1113,8 @@ class OpeningExplorerScreen(Screen):
             # update board
             self.layout.remove_widget(self.layout.children[2])
             self.layout.add_widget(widget=board_to_image(mycertabo.chessboard, flipped=(self.orientation == 'black')), index=2)
-            # flash leds by setting board to empty and then back to current board after 1 second
-            board = mycertabo.chessboard
-            mycertabo.set_board_from_fen("8/8/8/8/8/8/8/8 w - - 0 1")
-            time.sleep(1)
-            mycertabo.set_board_from_fen(board.fen())
-            time.sleep(1)
-            mycertabo.set_board_from_fen("8/8/8/8/8/8/8/8 w - - 0 1")
-            time.sleep(1)
-            mycertabo.set_board_from_fen(board.fen())
+
+            flash_leds()
             self.move = None
             Clock.schedule_once(self.update_board, 0.1)
             return
@@ -1173,15 +1205,8 @@ class OpeningExplorerScreen(Screen):
                 # update board
                 self.layout.remove_widget(self.layout.children[2])
                 self.layout.add_widget(widget=board_to_image(mycertabo.chessboard, flipped=(self.orientation == 'black')), index=2)
-                # flash leds by setting board to empty and then back to current board after 1 second
-                board = mycertabo.chessboard
-                mycertabo.set_board_from_fen("8/8/8/8/8/8/8/8 w - - 0 1")
-                time.sleep(1)
-                mycertabo.set_board_from_fen(board.fen())
-                time.sleep(1)
-                mycertabo.set_board_from_fen("8/8/8/8/8/8/8/8 w - - 0 1")
-                time.sleep(1)
-                mycertabo.set_board_from_fen(board.fen())
+                
+                flash_leds()
                 self.move = None
                 Clock.schedule_once(self.update_board, 0.1)
                 return
