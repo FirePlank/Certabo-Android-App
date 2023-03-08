@@ -661,7 +661,7 @@ class GameScreen(Screen):
         self.add_widget(self.layout)
 
         # schedule update before play
-        # Clock.schedule_once(self.update_before_play, 1)
+        Clock.schedule_once(self.update_before_play, 1)
 
     def back(self, instance):
         self.manager.transition.direction = 'right'
@@ -669,6 +669,8 @@ class GameScreen(Screen):
 
     def update_before_play(self, instance):
         global mycertabo
+        if self.manager.current != 'game': return
+
         if not self.playing:
             if mycertabo is not None:
                 if self.layout.children[0].text == 'Trying to see if we have connection to board...' or self.layout.children[0].text == 'No board found, please connect it and try again':
@@ -738,8 +740,7 @@ class GameScreen(Screen):
         self.move = None
         
     def update_board(self, instance):
-        if self.manager.current != 'game':
-            return
+        if self.manager.current != 'game': return
         
         if self.move is None:
             Clock.schedule_once(self.update_board, 0.1)
@@ -907,10 +908,9 @@ class OpeningExplorerScreen(Screen):
         self.manager.transition.direction = 'right'
         self.manager.current = 'main'
 
-    
-    def back(self, instance):
-        self.manager.transition.direction = 'right'
-        self.manager.current = 'main'
+    def on_leave(self, *args):
+        print('Leaving Opening Explorer Screen')
+        return super().on_leave(*args)
 
     def remove_id(self, id, instance):
         store = JsonStore('data.json')
@@ -1060,9 +1060,11 @@ class OpeningExplorerScreen(Screen):
             Clock.schedule_once(self.update_board, 0.1)
 
     def play_correct(self, instance):
-        mycertabo.chessboard.push(self.node.move)
+        try: mycertabo.chessboard.push(self.node.move)
+        except: return
+        
         self.layout.remove_widget(self.layout.children[0])
-        self.layout.add_widget(Label(text="Make the next move", font_size=30, size_hint=(1, None), height=50))
+        self.layout.add_widget(Label(text="Correct! Make the next move", font_size=30, size_hint=(1, None), height=50, color=(0, 1, 0, 1)))
         self.move = None
 
         if not self.node.variations:
@@ -1074,6 +1076,10 @@ class OpeningExplorerScreen(Screen):
             self.layout.add_widget(widget=board_to_image(mycertabo.chessboard, flipped=(self.orientation == 'black')), index=2)
             # flash leds by setting board to empty and then back to current board after 1 second
             board = mycertabo.chessboard
+            mycertabo.set_board_from_fen("8/8/8/8/8/8/8/8 w - - 0 1")
+            time.sleep(1)
+            mycertabo.set_board_from_fen(board.fen())
+            time.sleep(1)
             mycertabo.set_board_from_fen("8/8/8/8/8/8/8/8 w - - 0 1")
             time.sleep(1)
             mycertabo.set_board_from_fen(board.fen())
@@ -1103,6 +1109,10 @@ class OpeningExplorerScreen(Screen):
             self.layout.remove_widget(self.layout.children[0])
             self.layout.add_widget(Label(text="End of Study", font_size=30, size_hint=(1, None), height=50))
             return
+
+        thread = threading.Thread(target=self.get_move, daemon=True)
+        thread.start()
+        Clock.schedule_once(self.update_board, 0.1)
 
     def new(self, instance):
         self.game = random.choice(self.games)
@@ -1139,8 +1149,7 @@ class OpeningExplorerScreen(Screen):
 
 
     def update_board(self, instance):
-        if self.manager.current != 'opening_explorer':
-            return
+        if self.manager.current != 'opening_explorer': return
                 
         if self.move is None:
             Clock.schedule_once(self.update_board, 0.1)
